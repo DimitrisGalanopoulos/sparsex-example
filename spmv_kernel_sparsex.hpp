@@ -133,6 +133,5 @@ CSXArrays::spmv(ValueType * x, ValueType * y)
 	// }
 
 	spx_matvec_mult(alpha, A, x_v, y_v);
-	printf("lalala\n");
 }
 

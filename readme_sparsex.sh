@@ -15,6 +15,36 @@ export SPARSEX_ROOT_DIR="${ROOT_DIR}/sparsex"
 
 
 #==========================================================================================================================================
+# Prerequisites
+#==========================================================================================================================================
+
+prerequisites=(
+    wget
+    tar
+    git
+    make
+    gcc
+    g++
+    cmake
+    autoconf
+    libtool
+)
+
+err=0
+for p in "${prerequisites[@]}"; do
+    if ! hash "$p" &>/dev/null; then
+        echo "Please install '$p' in your system."
+        err=1
+    fi
+done
+
+if ((err)); then
+    exit 1
+fi
+echo 'Prerequisites found, continuing...'
+
+
+#==========================================================================================================================================
 # BOOST
 #==========================================================================================================================================
 
@@ -70,7 +100,7 @@ tar -vxf llvm-6.0.0.src.tar.xz
 mv llvm-6.0.0.src llvm-6.0.0
 rm llvm-6.0.0.src.tar.xz
 
-# 'cfe-6.0.0.src' needs to be but in llvm-6.0.0/tools and renamed to 'clang'.
+# 'cfe-6.0.0.src' needs to be put in llvm-6.0.0/tools and renamed to 'clang'.
 wget https://releases.llvm.org/6.0.0/cfe-6.0.0.src.tar.xz
 tar -vxf cfe-6.0.0.src.tar.xz
 mv cfe-6.0.0.src llvm-6.0.0/tools/clang
@@ -109,11 +139,12 @@ autoreconf -vi
 #        #include "$d/include/boost/version.hpp"      ->       #include "${SPARSEX_ROOT_DIR}/boost_1_55_0/bin/include/boost/version.hpp"
 #        BOOST_CPPFLAGS="-I$d/include"                ->       BOOST_CPPFLAGS="-I${SPARSEX_ROOT_DIR}/boost_1_55_0/bin/include/"
 
-# 'configure' uses 'sh' and it fails at 'test 6.0.0 == 6.0.0' at line 17535 because it doesn't support the '==' operator.
+# 'configure' uses 'sh' and it fails at 'test 6.0.0 == 6.0.0' at line 17535 because it doesn't support the '==' operator...
 # Just use bash like a normal person.
 sed 's/#!\s*\/bin\/sh/#!\/bin\/bash/' configure > configure.new
 rm configure
 mv configure.new configure
+chmod +x configure
 
 # At long last, configure.
 ./configure --disable-silent-rules  --prefix="${SPARSEX_ROOT_DIR}/build" --with-value=double --with-boostdir="${BOOST_ROOT_DIR}/bin" --with-boostlibdir="${BOOST_ROOT_DIR}/bin/lib" --with-llvm=${LLVM_ROOT_DIR}/build/bin/llvm-config
@@ -128,7 +159,7 @@ mv src/Makefile.new src/Makefile
 #        "AM_DEFAULT_VERBOSITY = 0"     ->     "AM_DEFAULT_VERBOSITY = 1"
 
 make -j8
-make install
+make -j8 install
 make check
 
 # After building successfully, ready to test it (test_sparsex.c).
