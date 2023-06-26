@@ -10,9 +10,6 @@ export BOOST_ROOT_DIR="${ROOT_DIR}/boost_1_55_0"
 export LLVM_ROOT_DIR="${ROOT_DIR}/llvm-6.0.0"
 export SPARSEX_ROOT_DIR="${ROOT_DIR}/sparsex"
 
-# export BOOST_LIB_PATH="${BOOST_ROOT_DIR}/bin/lib"
-# export LLVM_LIB_PATH="${LLVM_ROOT_DIR}/build/lib"
-
 
 #==========================================================================================================================================
 # Prerequisites
@@ -27,7 +24,6 @@ prerequisites=(
     g++
     cmake
     autoconf
-    libtool
 )
 
 err=0
@@ -37,6 +33,11 @@ for p in "${prerequisites[@]}"; do
         err=1
     fi
 done
+
+if ! ld -lnuma &>/dev/null; then
+    echo "Please install 'libnuma' in your system (usually package 'libnuma-dev')."
+    err=1
+fi
 
 if ((err)); then
     exit 1
